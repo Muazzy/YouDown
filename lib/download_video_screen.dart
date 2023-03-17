@@ -1,7 +1,11 @@
+import 'dart:io';
+
+import 'package:android_path_provider/android_path_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_video_downloader/model/video_model.dart';
 
 class DownloadVideoScreen extends StatefulWidget {
@@ -13,6 +17,9 @@ class DownloadVideoScreen extends StatefulWidget {
 }
 
 class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
+  bool isPermissionGranted = false;
+  late String _localPath;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,20 +32,6 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
             backgroundColor: Colors.transparent,
             expandedHeight: 200,
             flexibleSpace: FlexibleSpaceBar(
-              // centerTitle: true,
-              // title: Text(
-              //   widget.video.title ?? 'Download Video',
-              //   style: Theme.of(context).textTheme.labelMedium!.copyWith(
-              //         color: Colors.white,
-              //       ),
-              //   textAlign: TextAlign.center,
-              // ),
-
-              // background: Image(
-              //   image: CachedNetworkImage(
-              //       imageUrl: widget.video.thumbnail ?? defaultThumbnail,),
-              //   fit: BoxFit.cover,
-              // ),
               background: Hero(
                 tag: widget.video.id.toString(),
                 child: CachedNetworkImage(
@@ -52,18 +45,10 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
         ],
         body: SafeArea(
           child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero(
-                //   tag: widget.video.id.toString(),
-                //   child: Center(
-                //     child: CachedNetworkImage(
-                //       imageUrl: widget.video.thumbnail ?? defaultThumbnail,
-                //     ),
-                //   ),
-                // ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
@@ -104,7 +89,19 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                         '${widget.video.videoDownloadOptions![index].codec.subtype}: ${widget.video.videoDownloadOptions![index].bitrate}',
                       ),
                       trailing: IconButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          print('before $isPermissionGranted');
+
+                          isPermissionGranted = await _checkPermission();
+
+                          setState(() {});
+                          print('after $isPermissionGranted');
+
+                          await _prepareSaveDir();
+                          setState(() {});
+
+                          print('local path after: $_localPath');
+
                           print(widget.video.videoDownloadOptions![index].url);
                         },
                         icon: Icon(Icons.download),
@@ -177,5 +174,50 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _prepareSaveDir() async {
+    _localPath = (await _getSavedDir())!;
+    final savedDir = Directory(_localPath);
+    if (!savedDir.existsSync()) {
+      await savedDir.create();
+    }
+  }
+
+  Future<String?> _getSavedDir() async {
+    String? externalStorageDirPath;
+
+    if (Platform.isAndroid) {
+      try {
+        externalStorageDirPath = await AndroidPathProvider.downloadsPath;
+      } catch (err, st) {
+        print('failed to get downloads path: $err, $st');
+
+        final directory = await getExternalStorageDirectory();
+        externalStorageDirPath = directory?.path;
+      }
+    } else if (Platform.isIOS) {
+      externalStorageDirPath =
+          (await getApplicationDocumentsDirectory()).absolute.path;
+    }
+    return '$externalStorageDirPath/YouDown';
+  }
+
+  Future<bool> _checkPermission() async {
+    if (Platform.isIOS) {
+      return true;
+    }
+
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.status;
+      if (status == PermissionStatus.granted) {
+        return true;
+      }
+
+      final result = await Permission.storage.request();
+      return result == PermissionStatus.granted;
+    }
+
+    throw StateError('unknown platform');
   }
 }
