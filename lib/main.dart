@@ -14,7 +14,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData.light(),
+      theme: ThemeData.light(
+          useMaterial3:
+              true), // useMaterial3 set to true because selectedIcon property in iconButton will not work without it.
       home: const HomeScreen(),
     );
   }

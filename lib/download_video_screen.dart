@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_video_downloader/model/video_model.dart';
 
 class DownloadVideoScreen extends StatefulWidget {
@@ -19,6 +20,11 @@ class DownloadVideoScreen extends StatefulWidget {
 class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
   bool isPermissionGranted = false;
   late String _localPath;
+  String isSelected = '';
+  bool isDownloading = false;
+  List<String> downloads = [];
+
+  bool isDownloaded(String url) => downloads.contains(url);
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +77,7 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                               .video.videoDownloadOptions![index].qualityLabel,
                           style:
                               Theme.of(context).textTheme.bodySmall!.copyWith(
-                                    color: Colors.white,
+                                    color: Colors.purple.shade900,
                                     fontWeight: FontWeight.bold,
                                   ),
                         ),
@@ -88,30 +94,34 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                       subtitle: Text(
                         '${widget.video.videoDownloadOptions![index].codec.subtype}: ${widget.video.videoDownloadOptions![index].bitrate}',
                       ),
-                      trailing: IconButton(
-                        onPressed: () async {
-                          print('before $isPermissionGranted');
+                      trailing: !isDownloaded(widget
+                              .video.videoDownloadOptions![index].url
+                              .toString())
+                          ? IconButton(
+                              disabledColor: Colors.grey,
+                              color: Colors.purple,
+                              isSelected: isSelected ==
+                                  widget.video.videoDownloadOptions![index].url
+                                      .toString(),
+                              selectedIcon: CircularProgressIndicator(),
+                              //never do this : downloadFile( widget.video.audioDownloadOptions![index], widget.video), directly cuz it will call the function before its built
+                              onPressed: isDownloading
+                                  ? null
+                                  : () => downloadFile(
+                                      widget.video.videoDownloadOptions![index],
+                                      widget.video),
 
-                          isPermissionGranted = await _checkPermission();
-
-                          setState(() {});
-                          print('after $isPermissionGranted');
-
-                          await _prepareSaveDir();
-                          setState(() {});
-
-                          print('local path after: $_localPath');
-
-                          print(widget.video.videoDownloadOptions![index].url);
-                        },
-                        icon: Icon(Icons.download),
-                      ),
+                              icon: Icon(
+                                Icons.download,
+                              ),
+                            )
+                          : null,
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
-                    return const Divider(
-                      color: Colors.purple,
-                      thickness: 2,
+                    return Divider(
+                      color: Colors.purple.shade100,
+                      thickness: 1,
                     );
                   },
                 ),
@@ -132,13 +142,6 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                     return ListTile(
                       leading: const CircleAvatar(
                         radius: 30,
-                        // child: Text(
-                        //   widget.video.audioDownloadOptions![index].qualityLabel,
-                        //   style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        //         color: Colors.white,
-                        //         fontWeight: FontWeight.bold,
-                        //       ),
-                        // ),
                         child: Icon(Icons.music_note),
                       ),
                       title: Text(
@@ -153,12 +156,28 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                       subtitle: Text(
                         '${widget.video.audioDownloadOptions![index].codec.subtype}: ${widget.video.audioDownloadOptions![index].bitrate}',
                       ),
-                      trailing: IconButton(
-                        onPressed: () {
-                          print(widget.video.audioDownloadOptions![index].url);
-                        },
-                        icon: Icon(Icons.download),
-                      ),
+                      trailing: !isDownloaded(widget
+                              .video.audioDownloadOptions![index].url
+                              .toString())
+                          ? IconButton(
+                              disabledColor: Colors.grey,
+                              color: Colors.purple,
+                              isSelected: isSelected ==
+                                  widget.video.audioDownloadOptions![index].url
+                                      .toString(),
+                              selectedIcon: CircularProgressIndicator(),
+                              //never do this : downloadFile( widget.video.audioDownloadOptions![index], widget.video), directly cuz it will call the function before its built
+                              onPressed: isDownloading
+                                  ? null
+                                  : () => downloadFile(
+                                      widget.video.audioDownloadOptions![index],
+                                      widget.video),
+
+                              icon: Icon(
+                                Icons.download,
+                              ),
+                            )
+                          : null,
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
@@ -219,5 +238,63 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
     }
 
     throw StateError('unknown platform');
+  }
+
+  downloadFile(StreamInfo stream, VideoModel video) async {
+    setState(() {
+      isDownloading = true;
+      isSelected = stream.url.toString();
+    });
+
+    isPermissionGranted = await _checkPermission();
+    setState(() {});
+
+    if (!isPermissionGranted) {
+      setState(() {
+        isDownloading = false;
+        isSelected = '';
+      });
+      return print('permission not granted');
+    }
+
+    await _prepareSaveDir();
+    setState(() {});
+
+    bool isAudioFile = video.audioDownloadOptions!.contains(stream);
+
+    print('isAudioFile: $isAudioFile');
+    String extension = isAudioFile ? '.mp3' : '.mp4';
+    String quality = isAudioFile ? '' : stream.qualityLabel;
+
+    YoutubeExplode yt = YoutubeExplode();
+
+    var downloadStream = yt.videos.streamsClient.get(stream);
+
+    var file = File('$_localPath/${video.title}-$quality$extension');
+    if (file.existsSync()) {
+      int i = 1;
+      while (file.existsSync()) {
+        file = File('$_localPath/${video.title}-$quality-$i$extension');
+        i++;
+      }
+    }
+    var fileStream = file.openWrite(mode: FileMode.write);
+
+    downloadStream.listen((eventBytes) {
+      fileStream.add(eventBytes);
+    }).onDone(() async {
+      print(file.path);
+      await fileStream.flush();
+      await fileStream.close();
+
+      setState(() {
+        downloads
+            .add(stream.url.toString()); //change this to the path of the file
+        isDownloading = false;
+        isSelected = '';
+      });
+
+      print('completed successfully');
+    });
   }
 }

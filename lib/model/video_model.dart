@@ -22,8 +22,8 @@ class VideoModel {
     author = video.author;
     title = video.title;
     duration = getDurationString(video.duration ?? const Duration(seconds: 0));
-    videoDownloadOptions = manifest.videoOnly;
-    audioDownloadOptions = manifest.audioOnly;
+    videoDownloadOptions = manifest.muxed.sortByVideoQuality();
+    audioDownloadOptions = manifest.audioOnly.sortByBitrate().sublist(0, 1);
     thumbnail = video.thumbnails.mediumResUrl;
     id = video.id.value;
   }

@@ -31,10 +31,10 @@ dependencies:
   android_path_provider: ^0.3.0
   cached_network_image: ^3.2.3
   cupertino_icons: ^1.0.2
-  device_info_plus: ^8.1.0
+  # device_info_plus: ^8.1.0
   flutter:
     sdk: flutter
-  flutter_downloader: ^1.10.2
+  # flutter_downloader: ^1.10.2
   path_provider: ^2.0.13
   permission_handler: ^10.2.0
   youtube_explode_dart: ^1.12.4
