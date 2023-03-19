@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         return 'live vidoes can not be downloaded';
       } else {
-        final manifest = await yt.videos.streamsClient.getManifest(url);
+        final manifest = await yt.videos.streamsClient.getManifest(videoId);
         // List<StreamInfo> streams = manifest.streams;
 
         yt.close(); //closing the http client so it does not interfeir with other chores and for enhanced performance
@@ -185,7 +185,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (dialogContext.mounted) {
         Navigator.pop(dialogContext);
       }
-      return 'Error occured while fetching the video';
+      print('this is the error in catch: $e');
+      return 'Error occured while fetching the video,\nerror: $e';
     }
   }
 

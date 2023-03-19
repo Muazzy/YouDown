@@ -22,6 +22,8 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
   late String _localPath;
   String isSelected = '';
   bool isDownloading = false;
+  double? progress;
+  String? progressString;
   List<String> downloads = [];
 
   bool isDownloaded(String url) => downloads.contains(url);
@@ -103,7 +105,17 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                               isSelected: isSelected ==
                                   widget.video.videoDownloadOptions![index].url
                                       .toString(),
-                              selectedIcon: CircularProgressIndicator(),
+                              selectedIcon: Stack(
+                                alignment: Alignment.center,
+                                // mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(progressString ?? '0%'),
+                                  //TODO: will have to increase this
+                                  CircularProgressIndicator(
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                ],
+                              ),
                               //never do this : downloadFile( widget.video.audioDownloadOptions![index], widget.video), directly cuz it will call the function before its built
                               onPressed: isDownloading
                                   ? null
@@ -165,7 +177,17 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                               isSelected: isSelected ==
                                   widget.video.audioDownloadOptions![index].url
                                       .toString(),
-                              selectedIcon: CircularProgressIndicator(),
+                              selectedIcon: Stack(
+                                alignment: Alignment.center,
+                                // mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(progressString ?? '0%'),
+                                  //TODO: will have to increase this
+                                  CircularProgressIndicator(
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                ],
+                              ),
                               //never do this : downloadFile( widget.video.audioDownloadOptions![index], widget.video), directly cuz it will call the function before its built
                               onPressed: isDownloading
                                   ? null
@@ -219,7 +241,7 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
       externalStorageDirPath =
           (await getApplicationDocumentsDirectory()).absolute.path;
     }
-    return '$externalStorageDirPath/YouDown';
+    return '$externalStorageDirPath';
   }
 
   Future<bool> _checkPermission() async {
@@ -241,6 +263,12 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
   }
 
   downloadFile(StreamInfo stream, VideoModel video) async {
+    //TODO: see if you can minimize this setState here.
+    setState(() {
+      progress = null;
+      progressString = null;
+    });
+
     setState(() {
       isDownloading = true;
       isSelected = stream.url.toString();
@@ -280,7 +308,24 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
     }
     var fileStream = file.openWrite(mode: FileMode.write);
 
+    int totalSizeInBytes = stream.size.totalBytes;
+
+    List<int> downloadedBytes = [];
+
     downloadStream.listen((eventBytes) {
+      downloadedBytes.addAll(eventBytes);
+
+      final downloadedLength = downloadedBytes.length;
+      progress = downloadedLength.toDouble() /
+          (totalSizeInBytes == 0 ? 1 : totalSizeInBytes);
+
+      // print('eventBytes length ${eventBytes.length}');
+      print('progress: ${(progress ?? 0) * 100}');
+
+      setState(() {
+        progressString = '${((progress ?? 0) * 100).toStringAsFixed(2)}%';
+      });
+
       fileStream.add(eventBytes);
     }).onDone(() async {
       print(file.path);
