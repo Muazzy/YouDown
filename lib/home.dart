@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.purple.shade50,
       body: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: 16,
@@ -41,14 +42,14 @@ class _HomeScreenState extends State<HomeScreen> {
             Spacer(),
             Center(
               child: Text(
-                'Please paste the url of the video you want to download',
+                'Paste the url of the video you want to download',
                 textAlign: TextAlign.center,
               ),
             ),
             Spacer(),
             CustomFormField(
               labelText: 'url',
-              primaryColor: Colors.pink,
+              primaryColor: Colors.purple,
               textColor: Colors.black,
               textEditingController: urlCont,
               suffixIcon: IconButton(
@@ -81,34 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
             result.isNotEmpty
                 ? Text(result)
                 : currentVideo.thumbnail != defaultThumbnail + defaultThumbnail
-                    ? ListTile(
-                        leading: Hero(
-                          tag: currentVideo.id.toString(),
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                currentVideo.thumbnail ?? defaultThumbnail,
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(
-                              Icons.error,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                        title: Text(currentVideo.title ?? ''),
-                        subtitle: Text(currentVideo.author ?? ''),
-                        trailing: Text(currentVideo.duration ?? ''),
-                        onTap: () {
-                          FocusScope.of(context).unfocus();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DownloadVideoScreen(video: currentVideo),
-                            ),
-                          );
-                        },
-                      )
+                    ? CustomVideoWidget(video: currentVideo)
                     : SizedBox.shrink(),
             Spacer(),
           ],
@@ -122,10 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final dialogContextCompleter = Completer<BuildContext>();
     DialogUtils.showFullScreenLoading(context, dialogContextCompleter);
 
-    // setState(() {
-    //   isLoading = true;
-    // });
-
     // Close progress dialog
     BuildContext dialogContext =
         context; //a little workaround, if i do not initialize it with some context then the when complete thing won't work.
@@ -134,11 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       if (url.isEmpty) {
-        // setState(() {
-        //   isLoading = false;
-
-        // });
-
         if (dialogContext.mounted) {
           Navigator.pop(dialogContext);
         }
@@ -148,9 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final videoId = getVideoID(url);
 
       if (videoId.isEmpty) {
-        // setState(() {
-        //   isLoading = false;
-        // });
         if (dialogContext.mounted) {
           Navigator.pop(dialogContext);
         }
@@ -161,21 +123,16 @@ class _HomeScreenState extends State<HomeScreen> {
       var video = await yt.videos.get(videoId);
       if (video.isLive) {
         yt.close(); //closing the http client so it does not interfeir with other chores and for enhanced performance
-        // setState(() {
-        //   isLoading = false;
-        // });
+
         if (dialogContext.mounted) {
           Navigator.pop(dialogContext);
         }
         return 'live vidoes can not be downloaded';
       } else {
         final manifest = await yt.videos.streamsClient.getManifest(videoId);
-        // List<StreamInfo> streams = manifest.streams;
 
         yt.close(); //closing the http client so it does not interfeir with other chores and for enhanced performance
-        // setState(() {
-        //   isLoading = false;
-        // });
+
         if (dialogContext.mounted) {
           Navigator.pop(dialogContext);
         }
@@ -197,5 +154,85 @@ class _HomeScreenState extends State<HomeScreen> {
     String? videoId = regex.firstMatch(url)?.group(1);
 
     return videoId ?? '';
+  }
+}
+
+class CustomVideoWidget extends StatelessWidget {
+  final VideoModel video;
+  const CustomVideoWidget({super.key, required this.video});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.all(
+        Radius.circular(16),
+      ),
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DownloadVideoScreen(video: video),
+          ),
+        );
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(16),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Hero(
+              tag: video.id.toString(),
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: CachedNetworkImage(
+                  height: 200,
+                  width: double.infinity,
+                  imageUrl: video.thumbnail ?? defaultThumbnail,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            PaddedText(
+              textWidget: Text(
+                video.title ?? '',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple.shade900,
+                ),
+              ),
+            ),
+            PaddedText(
+                textWidget: Text(
+              video.author ?? '',
+              style: TextStyle(
+                color: Colors.purple.shade300,
+                fontStyle: FontStyle.italic,
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PaddedText extends StatelessWidget {
+  final Text textWidget;
+  const PaddedText({super.key, required this.textWidget});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: textWidget,
+    );
   }
 }

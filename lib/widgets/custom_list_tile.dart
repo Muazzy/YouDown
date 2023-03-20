@@ -8,6 +8,7 @@ class CustomListTile extends StatelessWidget {
   final String progressString;
   final bool isDownloading;
   final VoidCallback onDownload;
+  final bool isAudioTile;
   const CustomListTile({
     super.key,
     required this.stream,
@@ -16,21 +17,27 @@ class CustomListTile extends StatelessWidget {
     required this.progressString,
     required this.isDownloading,
     required this.onDownload,
+    this.isAudioTile = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: CircleAvatar(
-        radius: 30,
-        child: Text(
-          stream.qualityLabel,
-          style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                color: Colors.purple.shade900,
-                fontWeight: FontWeight.bold,
+      leading: isAudioTile
+          ? const CircleAvatar(
+              radius: 30,
+              child: Icon(Icons.music_note),
+            )
+          : CircleAvatar(
+              radius: 30,
+              child: Text(
+                stream.qualityLabel,
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Colors.purple.shade900,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-        ),
-      ),
+            ),
       title: Text(
         stream.size.toString(),
         style: Theme.of(context).textTheme.titleMedium!.copyWith(

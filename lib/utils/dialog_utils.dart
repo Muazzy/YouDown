@@ -3,6 +3,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class DialogUtils {
+  static showSnackbar(String message, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.purple.shade900,
+        content: Text(
+          message,
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                color: Colors.purple.shade50,
+              ),
+        ),
+      ),
+    );
+  }
+
   static showFullScreenLoading(
       BuildContext context, Completer<BuildContext> dialogContextCompleter) {
     showGeneralDialog(
