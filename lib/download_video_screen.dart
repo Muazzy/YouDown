@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:android_path_provider/android_path_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -107,6 +108,24 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                     itemCount: widget.video.videoDownloadOptions!.length,
                     itemBuilder: (context, index) {
                       return CustomListTile(
+                        onTap: isDownloaded(widget
+                                .video.videoDownloadOptions![index].url
+                                .toString())
+                            ? () async {
+                                try {
+                                  final result = await OpenFilex.open(
+                                    widget.video.paths?[widget
+                                        .video.videoDownloadOptions?[index].url
+                                        .toString()],
+                                  );
+                                  print(
+                                      'message:${result.message}  type:${result.type}');
+                                } catch (e) {
+                                  DialogUtils.showSnackbar(
+                                      e.toString(), context);
+                                }
+                              }
+                            : null,
                         stream: widget.video.videoDownloadOptions![index],
                         isSelected: isSelected ==
                             widget.video.videoDownloadOptions![index].url
@@ -146,6 +165,24 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                     itemCount: widget.video.audioDownloadOptions!.length,
                     itemBuilder: (context, index) {
                       return CustomListTile(
+                        onTap: isDownloaded(widget
+                                .video.audioDownloadOptions![index].url
+                                .toString())
+                            ? () async {
+                                try {
+                                  final result = await OpenFilex.open(
+                                    widget.video.paths?[widget
+                                        .video.audioDownloadOptions?[index].url
+                                        .toString()],
+                                  );
+                                  print(
+                                      'message:${result.message}  type:${result.type}');
+                                } catch (e) {
+                                  DialogUtils.showSnackbar(
+                                      e.toString(), context);
+                                }
+                              }
+                            : null,
                         isAudioTile: true,
                         stream: widget.video.audioDownloadOptions![index],
                         isSelected: isSelected ==
@@ -293,10 +330,13 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
       DialogUtils.showSnackbar('File Downloaded: ${file.path}', context);
       await fileStream.flush();
       await fileStream.close();
-
+      print('before ${video.paths}');
       setState(() {
+        video.paths?.addAll({stream.url.toString(): file.path});
         downloads
             .add(stream.url.toString()); //change this to the path of the file
+        print('after ${video.paths}');
+
         isDownloading = false;
         isSelected = '';
         progress = null;

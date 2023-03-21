@@ -8,6 +8,7 @@ class CustomListTile extends StatelessWidget {
   final String progressString;
   final bool isDownloading;
   final VoidCallback onDownload;
+  final VoidCallback? onTap;
   final bool isAudioTile;
   const CustomListTile({
     super.key,
@@ -18,11 +19,13 @@ class CustomListTile extends StatelessWidget {
     required this.isDownloading,
     required this.onDownload,
     this.isAudioTile = false,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: onTap,
       leading: isAudioTile
           ? const CircleAvatar(
               radius: 30,

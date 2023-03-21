@@ -8,15 +8,18 @@ class VideoModel {
   String? duration;
   String? thumbnail;
   String? id;
+  Map<String, String>? paths;
 
-  VideoModel(
-      {this.title = '',
-      this.author = '',
-      this.videoDownloadOptions = const [],
-      this.duration = '',
-      this.thumbnail = defaultThumbnail,
-      this.audioDownloadOptions = const [],
-      this.id = ''});
+  VideoModel({
+    this.title = '',
+    this.author = '',
+    this.videoDownloadOptions = const [],
+    this.duration = '',
+    this.thumbnail = defaultThumbnail,
+    this.audioDownloadOptions = const [],
+    this.id = '',
+    this.paths = const <String, String>{},
+  });
 
   VideoModel.fromVideo(Video video, StreamManifest manifest) {
     author = video.author;
@@ -26,6 +29,7 @@ class VideoModel {
     audioDownloadOptions = manifest.audioOnly.sortByBitrate().sublist(0, 1);
     thumbnail = video.thumbnails.mediumResUrl;
     id = video.id.value;
+    paths = <String, String>{};
   }
 }
 
