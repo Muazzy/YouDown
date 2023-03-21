@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" package="com.example.youtube_video_downloader">
+    xmlns:tools="http://schemas.android.com/tools" package="com.example.you_down">
 
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -10,7 +10,7 @@
 
    <application
         android:requestLegacyExternalStorage="true"
-        android:label="youtube_video_downloader"
+        android:label="YouDown"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

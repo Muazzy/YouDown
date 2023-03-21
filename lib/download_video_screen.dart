@@ -6,9 +6,9 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:youtube_video_downloader/model/video_model.dart';
-import 'package:youtube_video_downloader/utils/dialog_utils.dart';
-import 'package:youtube_video_downloader/widgets/custom_list_tile.dart';
+import 'package:you_down/model/video_model.dart';
+import 'package:you_down/utils/dialog_utils.dart';
+import 'package:you_down/widgets/custom_list_tile.dart';
 
 class DownloadVideoScreen extends StatefulWidget {
   final VideoModel video;
@@ -240,7 +240,7 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
       externalStorageDirPath =
           (await getApplicationDocumentsDirectory()).absolute.path;
     }
-    return '$externalStorageDirPath/YouDown';
+    return '$externalStorageDirPath/you_down';
   }
 
   Future<bool> _checkPermission() async {

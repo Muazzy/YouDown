@@ -5,9 +5,9 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:youtube_video_downloader/download_video_screen.dart';
-import 'package:youtube_video_downloader/utils/dialog_utils.dart';
-import 'package:youtube_video_downloader/widgets/custom_textfield.dart';
+import 'package:you_down/download_video_screen.dart';
+import 'package:you_down/utils/dialog_utils.dart';
+import 'package:you_down/widgets/custom_textfield.dart';
 
 import 'model/video_model.dart';
 
