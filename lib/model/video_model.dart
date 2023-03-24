@@ -33,9 +33,6 @@ class VideoModel {
   }
 }
 
-//TODO: filter these audio and videolists. only keep one from each quality tag i.e 720p etc and choose the one with highest bitrate.
-// in audiolist. only provide one or max 2 options. if only one then select the one with highest bitrate. otherwise do the same as video but instead of qualitytag, choose subtype to filter.
-
 const String defaultThumbnail =
     'https://www.pngfind.com/pngs/m/676-6764065_default-profile-picture-transparent-hd-png-download.png';
 

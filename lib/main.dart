@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'YouDown',
       theme: ThemeData.light(
           useMaterial3:
               true), // useMaterial3 set to true because selectedIcon property in iconButton will not work without it.

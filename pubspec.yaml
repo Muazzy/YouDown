@@ -31,6 +31,7 @@ dependencies:
   android_path_provider: ^0.3.0
   cached_network_image: ^3.2.3
   cupertino_icons: ^1.0.2
+  device_info_plus: ^8.1.0
   flutter:
     sdk: flutter
   flutter_launcher_icons: ^0.12.0
