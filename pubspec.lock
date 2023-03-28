@@ -177,6 +177,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.4"
+  file_manager:
+    dependency: "direct main"
+    description:
+      name: file_manager
+      sha256: d66e05b9f9eedb86ad21bf699e5a18caaf07ae4c1e27e12ff0ee3251db688587
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -329,7 +337,7 @@ packages:
     source: hosted
     version: "4.3.2"
   path:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path
       sha256: db9d4f58c908a4ba5953fcee2ae317c94889433e5024c27ce74a37f94267945b

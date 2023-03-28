@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+// import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:you_down/utils/main_utils.dart';
@@ -27,9 +27,9 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
   double? progress;
   String? progressString;
   List<String> downloads = [];
-  final String appName = 'YouDown';
+  // final String appName = 'YouDown';
 
-  DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+  // DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
   bool isDownloaded(String url) => downloads.contains(url);
 
@@ -122,7 +122,7 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                                         .video.videoDownloadOptions?[index].url
                                         .toString()],
                                   );
-                                  print(
+                                  debugPrint(
                                       'message:${result.message}  type:${result.type}');
                                 } catch (e) {
                                   DialogUtils.showSnackbar(
@@ -179,7 +179,7 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                                         .video.audioDownloadOptions?[index].url
                                         .toString()],
                                   );
-                                  print(
+                                  debugPrint(
                                       'message:${result.message}  type:${result.type}');
                                 } catch (e) {
                                   DialogUtils.showSnackbar(
@@ -240,10 +240,10 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
       await savedDir2.create();
     }
 
-    print('audio path: $_audioPath');
-    print('video path: $_videoPath');
+    debugPrint('audio path: $_audioPath');
+    debugPrint('video path: $_videoPath');
 
-    print('external path: $_localPath');
+    debugPrint('external path: $_localPath');
   }
 
   //TODO: move this to controller file if state management created.
@@ -277,7 +277,7 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
       setState(() {});
 
       //for getting the android sdk info.
-      final androidInfo = await deviceInfoPlugin.androidInfo;
+      // final androidInfo = await deviceInfoPlugin.androidInfo;
 
       // Check if it's an audio or video file
       bool isAudioFile = video.audioDownloadOptions!.contains(stream);
@@ -288,8 +288,8 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
 
       //set local path according to sdk and file type
       late final String localPath;
-      if (androidInfo.version.sdkInt > 29) {
-        print('local path after sdk 29 $_localPath');
+      if (await MainUtils.isSdkAbove29()) {
+        debugPrint('local path after sdk 29 $_localPath');
         localPath = _localPath;
       } else {
         localPath = isAudioFile ? _audioPath : _videoPath;

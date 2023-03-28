@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:you_down/downloads_screen.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:you_down/download_video_screen.dart';
 import 'package:you_down/utils/dialog_utils.dart';
@@ -29,6 +30,25 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FileListPage(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.download,
+              color: Colors.purple.shade900,
+            ),
+          ),
+        ],
+        backgroundColor: Colors.transparent,
+      ),
       backgroundColor: Colors.purple.shade50,
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -142,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (dialogContext.mounted) {
         Navigator.pop(dialogContext);
       }
-      print('this is the error in catch: $e');
+      debugPrint('this is the error in catch: $e');
       return 'Error occured while fetching the video,\nerror: $e';
     }
   }

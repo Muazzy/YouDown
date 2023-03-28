@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:android_path_provider/android_path_provider.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -28,7 +29,7 @@ class MainUtils {
         musicDirPath = await AndroidPathProvider.musicPath;
         videoDirPath = await AndroidPathProvider.moviesPath;
       } catch (err, st) {
-        print('failed to get downloads path: $err, $st');
+        debugPrint('failed to get downloads path: $err, $st');
 
         final dir = await getApplicationDocumentsDirectory();
 
@@ -55,7 +56,7 @@ class MainUtils {
       DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
       final androidInfo = await deviceInfoPlugin.androidInfo;
-      print("sdk int: ${androidInfo.version.sdkInt}");
+      debugPrint("sdk int: ${androidInfo.version.sdkInt}");
 
       if (androidInfo.version.sdkInt > 29) {
         final externalStorageStatus =
@@ -83,4 +84,34 @@ class MainUtils {
 
     throw StateError('unknown platform');
   }
+
+  static Future<bool> isSdkAbove29() async {
+    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+
+    final androidInfo = await deviceInfoPlugin.androidInfo;
+
+    return androidInfo.version.sdkInt > 29;
+  }
+
+  static String getFileExtension(File file) {
+    final String fileName = file.path.split('/').last;
+
+    final String extension = fileName.split('.').last;
+
+    return extension;
+  }
+
+  static IconData getFileIcon(File file) {
+    final String extension = file.path.split('.').last;
+
+    if (extension == 'mp3') {
+      return Icons.audio_file;
+    } else if (extension == 'mp4') {
+      return Icons.video_file;
+    } else {
+      return Icons.file_copy;
+    }
+  }
+
+  static String getFileName(File file) => file.path.split('/').last;
 }
