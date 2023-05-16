@@ -1,16 +1,19 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:you_down/utils/app_colors.dart';
 
 class DialogUtils {
   static showSnackbar(String message, BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: Colors.purple.shade900,
+        backgroundColor: AppColors.primary,
         content: Text(
           message,
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: Colors.purple.shade50,
+                color: AppColors.white,
               ),
         ),
       ),
@@ -23,7 +26,9 @@ class DialogUtils {
       context: context,
       barrierDismissible: false,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black45,
+      // barrierColor: Colors.black45,
+      barrierColor: Colors.transparent,
+
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (
         BuildContext buildContext,
@@ -33,17 +38,19 @@ class DialogUtils {
         if (!dialogContextCompleter.isCompleted) {
           dialogContextCompleter.complete(context);
         }
-        return Center(
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            padding: const EdgeInsets.all(20),
-            color: Colors.white.withOpacity(0),
-            child: const Center(
-              child: SizedBox(
-                height: 50,
-                width: 50,
-                child: CircularProgressIndicator(),
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              padding: const EdgeInsets.all(20),
+              color: Colors.white.withOpacity(0),
+              child: const Center(
+                child: SpinKitThreeBounce(
+                  color: AppColors.yellow300,
+                  size: 70,
+                ),
               ),
             ),
           ),
