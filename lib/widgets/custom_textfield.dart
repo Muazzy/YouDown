@@ -6,6 +6,8 @@ class CustomFormField extends StatefulWidget {
   final Color textColor;
   final TextEditingController textEditingController;
   final Widget? suffixIcon;
+
+  final Widget? prefixIcon;
   const CustomFormField({
     super.key,
     required this.labelText,
@@ -13,6 +15,7 @@ class CustomFormField extends StatefulWidget {
     required this.textColor,
     required this.textEditingController,
     this.suffixIcon,
+    this.prefixIcon,
   });
 
   @override
@@ -31,9 +34,8 @@ class _CustomFormFieldState extends State<CustomFormField> {
   Widget build(BuildContext context) {
     return Material(
       //cuz the textfeild's border radius is also the same
-      borderRadius: const BorderRadius.all(
-        Radius.circular(10),
-      ),
+      borderRadius: BorderRadius.circular(50),
+
       elevation: 1.5,
       // shadowColor: AppColors.bodyTextColor.withOpacity(0.8),
       shadowColor: Colors.black.withOpacity(0.8),
@@ -46,8 +48,11 @@ class _CustomFormFieldState extends State<CustomFormField> {
         ),
         cursorColor: widget.primaryColor.withOpacity(0.5),
         decoration: InputDecoration(
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          prefixIcon: widget.prefixIcon,
           suffixIcon: widget.suffixIcon,
-          contentPadding: const EdgeInsets.only(left: 12, right: 12),
+          contentPadding:
+              const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 12),
           labelStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: widget.textColor.withOpacity(0.5),
               ),
@@ -61,23 +66,17 @@ class _CustomFormFieldState extends State<CustomFormField> {
             borderSide: BorderSide(
               color: widget.primaryColor,
             ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10),
-            ),
+            borderRadius: BorderRadius.circular(50),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: widget.primaryColor,
             ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10),
-            ),
+            borderRadius: BorderRadius.circular(50),
           ),
-          enabledBorder: const OutlineInputBorder(
+          enabledBorder: OutlineInputBorder(
             borderSide: BorderSide.none,
-            borderRadius: BorderRadius.all(
-              Radius.circular(10),
-            ),
+            borderRadius: BorderRadius.circular(50),
           ),
         ),
       ),

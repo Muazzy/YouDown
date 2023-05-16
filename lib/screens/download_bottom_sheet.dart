@@ -1,23 +1,26 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:you_down/utils/app_colors.dart';
 import 'package:you_down/utils/main_utils.dart';
+import 'package:you_down/widgets/common/common_widgets.dart';
+import 'package:you_down/widgets/custom_dialog.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:you_down/model/video_model.dart';
 import 'package:you_down/utils/dialog_utils.dart';
 import 'package:you_down/widgets/custom_list_tile.dart';
 
-class DownloadVideoScreen extends StatefulWidget {
+class DownloadBottomSheet extends StatefulWidget {
   final VideoModel video;
-  const DownloadVideoScreen({super.key, required this.video});
+  const DownloadBottomSheet({super.key, required this.video});
 
   @override
-  State<DownloadVideoScreen> createState() => _DownloadVideoScreenState();
+  State<DownloadBottomSheet> createState() => _DownloadBottomSheetState();
 }
 
-class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
+class _DownloadBottomSheetState extends State<DownloadBottomSheet> {
   bool isPermissionGranted = false;
   String _localPath = '';
   String _videoPath = '';
@@ -27,156 +30,102 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
   double? progress;
   String? progressString;
   List<String> downloads = [];
-  // final String appName = 'YouDown';
-
-  // DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
   bool isDownloaded(String url) => downloads.contains(url);
 
   @override
   Widget build(BuildContext context) {
+    List<dynamic>? allVideosAndAudio = [
+      ...?widget.video.videoDownloadOptions,
+      ...?widget.video.audioDownloadOptions
+    ];
     return WillPopScope(
       onWillPop: () async {
         if (!isDownloading) {
           return true;
         } else {
-          final bool? shouldPop = await showDialog<bool>(
-              context: context,
-              builder: (conext) => AlertDialog(
-                    backgroundColor: Colors.purple.shade900,
-                    title: Text(
-                      'Downloading',
-                      style: TextStyle(color: Colors.purple.shade50),
-                    ),
-                    content: Text(
-                      'Wait for the download to be completed',
-                      style: TextStyle(color: Colors.purple.shade50),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, false);
-                        },
-                        child: Text(
-                          'Ok',
-                          style: TextStyle(color: Colors.purple.shade50),
-                        ),
-                      ),
-                    ],
-                  ));
+          final bool? shouldPop = await canIPop(context);
           return shouldPop ?? false;
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.purple.shade50,
-        body: NestedScrollView(
-          floatHeaderSlivers: true,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            SliverAppBar(
-              // pinned: true,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
-              expandedHeight: 200,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Hero(
-                  tag: widget.video.id.toString(),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.video.thumbnail ?? defaultThumbnail,
-                    fit: BoxFit.cover,
-                  ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: AlignmentDirectional.center,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(30),
                 ),
               ),
-              floating: true,
-            ),
-          ],
-          body: SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
+
+              // color: Colors.white,
+              padding:
+                  const EdgeInsets.only(top: 52, left: 8, right: 8, bottom: 16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        'Video Format',
-                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                              color: Colors.purple.shade900,
-                            ),
+                  const Center(
+                    child: Text(
+                      'Video Found',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: widget.video.videoDownloadOptions!.length,
-                    itemBuilder: (context, index) {
-                      return CustomListTile(
-                        onTap: isDownloaded(widget
-                                .video.videoDownloadOptions![index].url
-                                .toString())
-                            ? () async {
-                                try {
-                                  final result = await OpenFilex.open(
-                                    widget.video.paths?[widget
-                                        .video.videoDownloadOptions?[index].url
-                                        .toString()],
-                                  );
-                                  debugPrint(
-                                      'message:${result.message}  type:${result.type}');
-                                } catch (e) {
-                                  DialogUtils.showSnackbar(
-                                      e.toString(), context);
-                                }
-                              }
-                            : null,
-                        stream: widget.video.videoDownloadOptions![index],
-                        isSelected: isSelected ==
-                            widget.video.videoDownloadOptions![index].url
-                                .toString(),
-                        isDownloaded: isDownloaded(widget
-                            .video.videoDownloadOptions![index].url
-                            .toString()),
-                        progressString: progressString ?? '0%',
-                        isDownloading: isDownloading,
-                        onDownload: () => downloadFile(
-                          widget.video.videoDownloadOptions![index],
-                          widget.video,
+                  const SizedBox(height: 12),
+                  const KDivider(),
+                  ListTile(
+                    leading: AspectRatio(
+                      aspectRatio: 16.0 / 9.0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: CachedNetworkImage(
+                          height: 300,
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          imageUrl: widget.video.thumbnail ?? defaultThumbnail,
                         ),
-                      );
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return Divider(
-                        color: Colors.purple.shade100,
-                        thickness: 1,
-                      );
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Text(
-                        'Audio Format',
-                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                              color: Colors.purple.shade900,
-                            ),
+                      ),
+                    ),
+                    title: Text(
+                      '${widget.video.author}',
+                      style: const TextStyle(
+                        color: AppColors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${widget.video.title}',
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
+                  const KDivider(),
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: widget.video.audioDownloadOptions!.length,
+                    // itemCount: widget.video.videoDownloadOptions!.length,
+                    itemCount: allVideosAndAudio.length,
                     itemBuilder: (context, index) {
                       return CustomListTile(
-                        onTap: isDownloaded(widget
-                                .video.audioDownloadOptions![index].url
-                                .toString())
+                        isAudioTile: index == allVideosAndAudio.length - 1,
+                        onTap: isDownloaded(
+                                allVideosAndAudio[index].url.toString())
                             ? () async {
                                 try {
                                   final result = await OpenFilex.open(
-                                    widget.video.paths?[widget
-                                        .video.audioDownloadOptions?[index].url
+                                    widget.video.paths?[allVideosAndAudio[index]
+                                        .url
                                         .toString()],
                                   );
                                   debugPrint(
@@ -187,34 +136,52 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
                                 }
                               }
                             : null,
-                        isAudioTile: true,
-                        stream: widget.video.audioDownloadOptions![index],
+                        stream: allVideosAndAudio[index],
                         isSelected: isSelected ==
-                            widget.video.audioDownloadOptions![index].url
-                                .toString(),
+                            allVideosAndAudio[index].url.toString(),
                         isDownloaded: isDownloaded(
-                          widget.video.audioDownloadOptions![index].url
-                              .toString(),
+                          allVideosAndAudio[index].url.toString(),
                         ),
                         progressString: progressString ?? '0%',
                         isDownloading: isDownloading,
                         onDownload: () => downloadFile(
-                          widget.video.audioDownloadOptions![index],
+                          allVideosAndAudio[index],
                           widget.video,
                         ),
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {
-                      return Divider(
-                        color: Colors.purple.shade100,
-                        thickness: 1,
-                      );
+                      return const KDivider();
                     },
                   ),
                 ],
               ),
             ),
-          ),
+            Positioned(
+              top: -30,
+              width: 50,
+              child: FloatingActionButton(
+                backgroundColor: Colors.white,
+                onPressed: () async {
+                  if (!isDownloading) {
+                    Navigator.pop(context);
+                  } else {
+                    canIPop(context);
+                  }
+                },
+                shape: const CircleBorder(
+                  side: BorderSide(
+                    color: AppColors.black,
+                    width: 12,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.close,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -384,4 +351,15 @@ class _DownloadVideoScreenState extends State<DownloadVideoScreen> {
   }
 
   //end
+}
+
+Future<bool?> canIPop(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) => customDialog(
+      context,
+      'Downloading',
+      'Wait for the download to be completed',
+    ),
+  );
 }
