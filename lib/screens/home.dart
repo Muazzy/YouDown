@@ -14,14 +14,14 @@ import 'package:you_down/widgets/custom_textfield.dart';
 import 'package:you_down/widgets/file_thumbnail.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-class NewHome extends StatefulWidget {
-  const NewHome({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  State<NewHome> createState() => _NewHomeState();
+  State<Home> createState() => _HomeState();
 }
 
-class _NewHomeState extends State<NewHome> {
+class _HomeState extends State<Home> {
   final urlCont = TextEditingController();
   VideoModel currentVideo = VideoModel(
     thumbnail: defaultThumbnail + defaultThumbnail,

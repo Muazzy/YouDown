@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:you_down/utils/app_colors.dart';
 import 'package:you_down/utils/main_utils.dart';
+import 'package:you_down/widgets/common/common_widgets.dart';
 import 'package:you_down/widgets/custom_dialog.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:you_down/model/video_model.dart';
@@ -350,22 +351,6 @@ class _DownloadBottomSheetState extends State<DownloadBottomSheet> {
   }
 
   //end
-}
-
-class KDivider extends StatelessWidget {
-  const KDivider({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Divider(
-      color: AppColors.textAndSecondary.withOpacity(0.1),
-      thickness: 1,
-      indent: 8,
-      endIndent: 8,
-    );
-  }
 }
 
 Future<bool?> canIPop(BuildContext context) {

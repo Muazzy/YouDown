@@ -5,7 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:video_player/video_player.dart';
 import 'package:you_down/utils/app_colors.dart';
-import 'package:you_down/widgets/common/padded_text.dart';
+import 'package:you_down/widgets/common/common_widgets.dart';
 
 import '../utils/main_utils.dart';
 

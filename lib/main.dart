@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
               .background, // for removing the default light purple tint.
         ),
       ), // useMaterial3 set to true because selectedIcon property in iconButton will not work without it.
-      home: const NewHome(),
+      home: const Home(),
     );
   }
 }
