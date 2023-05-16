@@ -27,7 +27,7 @@ class _HomeState extends State<Home> {
     thumbnail: defaultThumbnail + defaultThumbnail,
   );
 
-  String result = '';
+  String errorMsg = '';
 
   List<File> _files = [];
   bool isLoadingFiles = true;
@@ -210,18 +210,18 @@ class _HomeState extends State<Home> {
 
                     if (tempR is String) {
                       setState(() {
-                        result = tempR;
+                        errorMsg = tempR;
                         //jugaaru way inorder to identify empty/null VideoModel instance
                         currentVideo = VideoModel(
                           thumbnail: defaultThumbnail + defaultThumbnail,
                         );
                       });
                       if (context.mounted) {
-                        DialogUtils.showSnackbar(result, context);
+                        DialogUtils.showSnackbar(errorMsg, context);
                       }
                     } else {
                       setState(() {
-                        result = '';
+                        errorMsg = '';
                         currentVideo = tempR;
                       });
 
