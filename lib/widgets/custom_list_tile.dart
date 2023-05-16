@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:you_down/utils/app_colors.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class CustomListTile extends StatelessWidget {
@@ -25,62 +26,72 @@ class CustomListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      tileColor: Colors.white,
       onTap: onTap,
       leading: isAudioTile
-          ? const CircleAvatar(
-              radius: 30,
-              child: Icon(Icons.music_note),
+          ? Image.asset(
+              'assets/audio_icon.png',
+              height: 35,
+              width: 35,
             )
-          : CircleAvatar(
-              radius: 30,
-              child: Text(
-                stream.qualityLabel,
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      color: Colors.purple.shade900,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
+          : Image.asset(
+              'assets/video_icon.png',
+              height: 35,
+              width: 35,
             ),
       title: Text(
-        stream.size.toString(),
+        isAudioTile ? 'Audio' : '${stream.qualityLabel} Video',
         style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              // color: Colors.white,
+              color: AppColors.black,
               fontWeight: FontWeight.bold,
             ),
       ),
-      subtitle: Text(
-        '${stream.codec.subtype}: ${stream.bitrate}',
-      ),
-      trailing: !isDownloaded
-          ? IconButton(
-              disabledColor: Colors.grey,
-              color: Colors.purple,
-              isSelected: isSelected,
-              selectedIcon: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Transform.scale(
-                    scale: 1.5,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 0.5,
-                      backgroundColor: Colors.transparent,
-                    ),
+      trailing: isDownloaded
+          ? const Icon(Icons.download_done, color: AppColors.primary)
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Size ${stream.size.toString()}',
+                  style: const TextStyle(
+                    color: Colors.grey,
                   ),
-                  Text(
-                    progressString,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelSmall,
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  disabledColor: Colors.grey,
+                  color: AppColors.primary,
+                  isSelected: isSelected,
+                  selectedIcon: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Transform.scale(
+                        scale: 1.3,
+                        child: const CircularProgressIndicator(
+                          color: AppColors.primary,
+                          strokeWidth: 0.5,
+                          backgroundColor: Colors.transparent,
+                        ),
+                      ),
+                      Text(
+                        progressString,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                              color: AppColors.primary,
+                            ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              //never do this : downloadFile( widget.video.audioDownloadOptions![index], widget.video), directly cuz it will call the function before its built
-              onPressed: isDownloading ? null : onDownload,
+                  //never do this : downloadFile( widget.video.audioDownloadOptions![index], widget.video), directly cuz it will call the function before its built
+                  onPressed: isDownloading ? null : onDownload,
 
-              icon: const Icon(
-                Icons.download,
-              ),
-            )
-          : const Icon(Icons.download_done, color: Colors.green),
+                  icon: const Icon(
+                    Icons.download,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
