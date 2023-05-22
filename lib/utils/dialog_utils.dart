@@ -21,8 +21,13 @@ class DialogUtils {
   }
 
   static showFullScreenLoading(
-      BuildContext context, Completer<BuildContext> dialogContextCompleter) {
+    BuildContext context,
+    // Completer dialogContextCompleter,
+  ) {
     showGeneralDialog(
+      useRootNavigator:
+          true, // so that i can close it using this method : Navigator.of(context, rootNavigator: true).pop() & avoid using Completer & shit
+
       context: context,
       barrierDismissible: false,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
@@ -35,9 +40,9 @@ class DialogUtils {
         Animation animation,
         Animation secondaryAnimation,
       ) {
-        if (!dialogContextCompleter.isCompleted) {
-          dialogContextCompleter.complete(context);
-        }
+        // if (!dialogContextCompleter.isCompleted) {
+        //   dialogContextCompleter.complete(context);
+        // }
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Center(

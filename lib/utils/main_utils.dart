@@ -5,11 +5,12 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:you_down/utils/dialog_utils.dart';
 
 class MainUtils {
   static Future<List<String?>> getSavedDir() async {
+    if (await MainUtils.checkStoragePermission() == false) {
+      return [];
+    }
     const String appName = 'YouDown';
 
     String? externalStorageDirPath;
@@ -103,17 +104,17 @@ class MainUtils {
     return extension;
   }
 
-  static IconData getFileIcon(File file) {
-    final String extension = file.path.split('.').last;
+  // static IconData getFileIcon(File file) {
+  //   final String extension = file.path.split('.').last;
 
-    if (extension == 'mp3') {
-      return Icons.audio_file;
-    } else if (extension == 'mp4') {
-      return Icons.video_file;
-    } else {
-      return Icons.file_copy;
-    }
-  }
+  //   if (extension == 'mp3') {
+  //     return Icons.audio_file;
+  //   } else if (extension == 'mp4') {
+  //     return Icons.video_file;
+  //   } else {
+  //     return Icons.file_copy;
+  //   }
+  // }
 
   static bool isVideo(File file) {
     final String extension = file.path.split('.').last;
@@ -134,38 +135,5 @@ class MainUtils {
     String? videoId = regex.firstMatch(url)?.group(1);
 
     return videoId ?? '';
-  }
-
-  static Future<bool> deleteFile(File file, BuildContext context) async {
-    try {
-      if (await file.exists()) {
-        await file.delete();
-        if (context.mounted) {
-          DialogUtils.showSnackbar('file deleted', context);
-        }
-        return true;
-      }
-      return false;
-    } catch (e) {
-      DialogUtils.showSnackbar(e.toString(), context);
-      return false;
-    }
-  }
-
-  static shareFile(BuildContext context, File file) async {
-    final box = context.findRenderObject() as RenderBox?;
-
-    try {
-      if (await file.exists()) {
-        await Share.shareXFiles(
-          [XFile(file.path)],
-          subject: '',
-          text: '',
-          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-        );
-      }
-    } catch (e) {
-      DialogUtils.showSnackbar(e.toString(), context);
-    }
   }
 }

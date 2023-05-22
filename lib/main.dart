@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:you_down/screens/home.dart';
 import 'package:you_down/utils/app_colors.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Plugin must be initialized before using
+  await FlutterDownloader.initialize(
+      // debug:
+      //     true, // optional: set to false to disable printing logs to console (default: true)
+      ignoreSsl:
+          true // option: set to false to disable working with http links (default: false)
+      );
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -25,6 +40,9 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           surfaceTintColor: AppColors
               .background, // for removing the default light purple tint.
+          shadowColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          elevation: 0,
         ),
       ), // useMaterial3 set to true because selectedIcon property in iconButton will not work without it.
       home: const Home(),
