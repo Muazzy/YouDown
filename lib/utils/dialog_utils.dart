@@ -6,7 +6,10 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:you_down/utils/app_colors.dart';
 
 class DialogUtils {
-  static showSnackbar(String message, BuildContext context) {
+  late BuildContext context;
+  DialogUtils(this.context);
+
+  showSnackbar(String message, [SnackBarAction? action]) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppColors.primary,
@@ -16,17 +19,19 @@ class DialogUtils {
                 color: AppColors.white,
               ),
         ),
+        action: action,
       ),
     );
   }
 
-  static showFullScreenLoading(
-      BuildContext context, Completer<BuildContext> dialogContextCompleter) {
+  showFullScreenLoading() {
     showGeneralDialog(
+      // useRootNavigator:
+      //     true, // so that i can close it using this method : Navigator.of(context, rootNavigator: true).pop() & avoid using Completer & shit
+
       context: context,
       barrierDismissible: false,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      // barrierColor: Colors.black45,
       barrierColor: Colors.transparent,
 
       transitionDuration: const Duration(milliseconds: 200),
@@ -35,9 +40,6 @@ class DialogUtils {
         Animation animation,
         Animation secondaryAnimation,
       ) {
-        if (!dialogContextCompleter.isCompleted) {
-          dialogContextCompleter.complete(context);
-        }
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Center(
@@ -57,5 +59,9 @@ class DialogUtils {
         );
       },
     );
+  }
+
+  Future<void> stopLoading() async {
+    Navigator.of(context).pop();
   }
 }

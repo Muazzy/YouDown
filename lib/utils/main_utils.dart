@@ -5,12 +5,13 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:you_down/utils/dialog_utils.dart';
 
 class MainUtils {
   static Future<List<String?>> getSavedDir() async {
-    const String appName = 'YouDown';
+    if (await MainUtils.checkStoragePermission() == false) {
+      return [];
+    }
+    const String appName = '/YouDown';
 
     String? externalStorageDirPath;
     String? musicDirPath;
@@ -43,9 +44,9 @@ class MainUtils {
     }
 
     return [
-      "$externalStorageDirPath/$appName",
-      "$musicDirPath/$appName",
-      "$videoDirPath/$appName"
+      "$externalStorageDirPath$appName",
+      "$musicDirPath$appName",
+      "$videoDirPath$appName"
     ];
   }
 
@@ -87,6 +88,17 @@ class MainUtils {
     throw StateError('unknown platform');
   }
 
+  static requestPermission() async {
+    if (await Permission.storage.isPermanentlyDenied ||
+        await Permission.storage.isRestricted) {
+      return 'Storage permission permanently deniend, please go to app settings & allow it manually';
+    } else if (await Permission.storage.isDenied) {
+      Permission.storage.request();
+    } else {
+      return;
+    }
+  }
+
   static Future<bool> isSdkAbove29() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
@@ -95,25 +107,13 @@ class MainUtils {
     return androidInfo.version.sdkInt > 29;
   }
 
-  static String getFileExtension(File file) {
-    final String fileName = file.path.split('/').last;
+  // static String getFileExtension(File file) {
+  //   final String fileName = file.path.split('/').last;
 
-    final String extension = fileName.split('.').last;
+  //   final String extension = fileName.split('.').last;
 
-    return extension;
-  }
-
-  static IconData getFileIcon(File file) {
-    final String extension = file.path.split('.').last;
-
-    if (extension == 'mp3') {
-      return Icons.audio_file;
-    } else if (extension == 'mp4') {
-      return Icons.video_file;
-    } else {
-      return Icons.file_copy;
-    }
-  }
+  //   return extension;
+  // }
 
   static bool isVideo(File file) {
     final String extension = file.path.split('.').last;
@@ -134,38 +134,5 @@ class MainUtils {
     String? videoId = regex.firstMatch(url)?.group(1);
 
     return videoId ?? '';
-  }
-
-  static Future<bool> deleteFile(File file, BuildContext context) async {
-    try {
-      if (await file.exists()) {
-        await file.delete();
-        if (context.mounted) {
-          DialogUtils.showSnackbar('file deleted', context);
-        }
-        return true;
-      }
-      return false;
-    } catch (e) {
-      DialogUtils.showSnackbar(e.toString(), context);
-      return false;
-    }
-  }
-
-  static shareFile(BuildContext context, File file) async {
-    final box = context.findRenderObject() as RenderBox?;
-
-    try {
-      if (await file.exists()) {
-        await Share.shareXFiles(
-          [XFile(file.path)],
-          subject: '',
-          text: '',
-          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-        );
-      }
-    } catch (e) {
-      DialogUtils.showSnackbar(e.toString(), context);
-    }
   }
 }
