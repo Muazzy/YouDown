@@ -15,7 +15,8 @@ class DownloadsScreen extends ConsumerStatefulWidget {
 }
 
 class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
-  late dynamic something;
+  late dynamic referenceToProvider;
+
   @override
   void initState() {
     super.initState();
@@ -25,14 +26,14 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
   @override
   void dispose() {
     // _myDispose();
-    something.dispose();
+    referenceToProvider.dispose();
 
     super.dispose();
   }
 
   @override
   void didChangeDependencies() {
-    something = ref.read(downloadProvider.notifier);
+    referenceToProvider = ref.read(downloadProvider.notifier);
     super.didChangeDependencies();
   }
 

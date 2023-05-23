@@ -38,6 +38,10 @@ class SelectedDownloadsNotifier extends Notifier<List<StreamInfo>> {
       final dir = await ref.watch(dirProvider([isSdkAbove29, isAudio])
           .future); // use .future with await to get actual value.
 
+      if (dir.isEmpty) {
+        return;
+      }
+
       final fileName = await ref
           .watch(getFileNameProvider([video, stream, isAudio, dir]).future);
 

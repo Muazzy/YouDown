@@ -30,6 +30,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'YouDown',
       theme: ThemeData(
+        colorScheme: const ColorScheme.light(
+          inversePrimary: AppColors.yellow300,
+        ), //for changing the action text color
         useMaterial3: true,
         primaryColor: AppColors.primary,
         textSelectionTheme: TextSelectionThemeData(

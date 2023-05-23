@@ -11,6 +11,7 @@ import 'package:you_down/screens/download_bottom_sheet.dart';
 import 'package:you_down/screens/downloads_screen.dart';
 import 'package:you_down/utils/app_colors.dart';
 import 'package:you_down/utils/dialog_utils.dart';
+import 'package:you_down/utils/main_utils.dart';
 import 'package:you_down/widgets/custom_badge.dart';
 import 'package:you_down/widgets/custom_textfield.dart';
 import 'package:you_down/widgets/file_thumbnail.dart';
@@ -24,84 +25,32 @@ class Home extends ConsumerStatefulWidget {
 }
 
 class _HomeState extends ConsumerState<Home> {
+  late dynamic
+      referenceToProvider; //cuz i can't figure out the type of that shit bruh
+
   final urlCont = TextEditingController();
-
-  // final ReceivePort _port = ReceivePort();
-
-  // have to have all this logic of isolates and init states & dispose in a provider so that i can litsen to the changes even when im on another screen
 
   @override
   void initState() {
     super.initState();
 
+    //calling this shit here too so the tasks get updated even when the user is not on downloading tasks screen
     ref
         .read(downloadProvider.notifier)
         .initialize(); //will setup all the port, isolates and shit to update the download tasks in UI.
-
-    // _bindBackgroundIsolate();
-
-    // FlutterDownloader.registerCallback(downloadCallback, step: 1);
   }
-
-  // void _bindBackgroundIsolate() {
-  //   final isSuccess = IsolateNameServer.registerPortWithName(
-  //     _port.sendPort,
-  //     'downloader_send_port',
-  //   );
-  //   if (!isSuccess) {
-  //     _unbindBackgroundIsolate();
-  //     _bindBackgroundIsolate();
-  //     return;
-  //   }
-  //   _port.listen((dynamic data) {
-  //     final taskId = (data as List<dynamic>)[0] as String;
-  //     final status = DownloadTaskStatus(data[1] as int);
-  //     final progress = data[2] as int;
-
-  //     print(
-  //       'Callback on UI isolate: '
-  //       'task ($taskId) is in status ($status) and process ($progress)',
-  //     );
-
-  //     final downloadTasks = ref.watch(downloadProvider);
-  //     // final downloadTasks = ref.watch(downloadProvider).value;
-
-  //     if (downloadTasks.isNotEmpty) {
-  //       ref
-  //           .read(downloadProvider.notifier)
-  //           .updateTask(taskId, progress, status);
-  //     }
-  //   });
-  // }
 
   @override
   void dispose() {
-    //TODO: try adding this initstate in both the places without the provider & see what happens
-    // & also remove this initstate thingy from this class and only put it in the other downloads one, see what happenss!
-    // _unbindBackgroundIsolate();
-
     super.dispose();
-    ref.read(downloadProvider.notifier).dispose();
+    referenceToProvider.dispose();
   }
 
-  // void _unbindBackgroundIsolate() {
-  //   IsolateNameServer.removePortNameMapping('downloader_send_port');
-  // }
-
-  // @pragma('vm:entry-point')
-  // static void downloadCallback(
-  //   String id,
-  //   int status,
-  //   int progress,
-  // ) {
-  //   print(
-  //     'Callback on background isolate: '
-  //     'task ($id) is in status ($status) and process ($progress)',
-  //   );
-
-  //   IsolateNameServer.lookupPortByName('downloader_send_port')
-  //       ?.send([id, status, progress]);
-  // }
+  @override
+  void didChangeDependencies() {
+    referenceToProvider = ref.read(downloadProvider.notifier);
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,9 +66,7 @@ class _HomeState extends ConsumerState<Home> {
     ref.listen(videoProvider, (prev, next) {
       next.when(
         data: (data) {
-          // Navigator.of(context, rootNavigator: true)
-          //     .pop(); //close the loading dialog
-
+          DialogUtils(context).stopLoading();
           if (data is VideoModel) {
             return Future.delayed(
               const Duration(milliseconds: 200),
@@ -147,68 +94,28 @@ class _HomeState extends ConsumerState<Home> {
               },
             );
           } else {
-            DialogUtils.showSnackbar(data.toString(), context);
+            DialogUtils(context).showSnackbar(data.toString());
           }
         },
         error: (e, s) {
-          // Navigator.of(context, rootNavigator: true)
-          //     .pop(); //close the loading dialog
-          DialogUtils.showSnackbar(e.toString(), context);
+          DialogUtils(context)
+              .stopLoading(); //first stop loading then show the snackbar
+          DialogUtils(context).showSnackbar(e.toString());
         },
         loading: () {
-          // DialogUtils.showFullScreenLoading(
-          //   context,
-          // );
-          DialogUtils.showSnackbar('loading bitch', context);
+          DialogUtils(context).showFullScreenLoading();
         },
       );
     });
 
-//TODO : the button's border is not clickable in the bottomsheet top
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         centerTitle: true,
-        title: Container(
-          decoration: BoxDecoration(
-            color: Colors.yellow.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: const Text(
-            'YouDown',
-            style: TextStyle(
-              letterSpacing: 2,
-              fontSize: 18,
-            ),
-          ),
-        ),
+        title: const TitleWidget(),
         actions: [
-          CustomBadge(
-            showBadge: ref.watch(downloadsInProgressProvider).isNotEmpty,
-            // showBadge: ref.watch(downloadProvider).value?.isNotEmpty ?? false,
-
-            badgeContent:
-                ref.watch(downloadsInProgressProvider).length.toString(),
-
-            // badgeContent:
-            //     ref.watch(downloadProvider).value?.length.toString() ?? '',
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return DownloadsScreen();
-                  }),
-                );
-              },
-              icon: const Icon(
-                Icons.download_outlined,
-                size: 30,
-              ),
-            ),
-          ),
+          DownloadsIcon(ref: ref),
         ],
       ),
       body: Padding(
@@ -242,10 +149,34 @@ class _HomeState extends ConsumerState<Home> {
                   onPressed: () async {
                     FocusScope.of(context).unfocus();
 
-                    ref.read(videoProvider.notifier).getVideo(
-                          // urlCont.text.trim(),
-                          'https://youtu.be/Yj1IihCcPe0',
+                    if (await MainUtils.checkStoragePermission()) {
+                      ref.read(videoProvider.notifier).getVideo(
+                            urlCont.text.trim(),
+                          );
+                    } else {
+                      if (context.mounted) {
+                        DialogUtils(context).showSnackbar(
+                          'permission not allowed',
+                          // context,
+                          SnackBarAction(
+                            label: 'Allow here',
+                            onPressed: () async {
+                              // print('hello im clicked');
+                              final String? error =
+                                  await MainUtils.requestPermission();
+
+                              if (error?.isNotEmpty ?? false) {
+                                if (context.mounted) {
+                                  DialogUtils(context).showSnackbar(
+                                    error.toString(),
+                                  );
+                                }
+                              }
+                            },
+                          ),
                         );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       shape: const CircleBorder(),
@@ -314,6 +245,61 @@ class _HomeState extends ConsumerState<Home> {
               );
             }),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class DownloadsIcon extends StatelessWidget {
+  const DownloadsIcon({
+    super.key,
+    required this.ref,
+  });
+
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomBadge(
+      showBadge: ref.watch(downloadsInProgressProvider).isNotEmpty,
+      badgeContent: ref.watch(downloadsInProgressProvider).length.toString(),
+      child: IconButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return const DownloadsScreen();
+            }),
+          );
+        },
+        icon: const Icon(
+          Icons.download_outlined,
+          size: 30,
+        ),
+      ),
+    );
+  }
+}
+
+class TitleWidget extends StatelessWidget {
+  const TitleWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.yellow.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: const Text(
+        'YouDown',
+        style: TextStyle(
+          letterSpacing: 2,
+          fontSize: 18,
         ),
       ),
     );

@@ -16,22 +16,35 @@ class DownloaderNotifier extends Notifier<List<DownloadTaskModel>> {
     state = [...state, ...selected];
   }
 
-  void pause(String taskId) {
-    FlutterDownloader.pause(taskId: taskId);
-    _updateStatus(taskId, DownloadTaskStatus.paused);
-  }
+  //not implemented yet
 
-  void resume(String taskId) {
-    FlutterDownloader.resume(taskId: taskId);
-    _updateStatus(taskId, DownloadTaskStatus.running);
-  }
+  // void pause(String taskId) {
+  //   FlutterDownloader.pause(taskId: taskId);
+  //   _updateStatus(taskId, DownloadTaskStatus.paused);
+  // }
 
-  void retry(String taskId) {
-    FlutterDownloader.retry(taskId: taskId);
-    _updateStatus(taskId, DownloadTaskStatus.running);
-  }
+  // void resume(String taskId) {
+  //   FlutterDownloader.resume(taskId: taskId);
+  //   _updateStatus(taskId, DownloadTaskStatus.running);
+  // }
 
-  void cancel(String taskId) {
+  // void retry(String taskId) {
+  //   FlutterDownloader.retry(taskId: taskId);
+  //   _updateStatus(taskId, DownloadTaskStatus.running);
+  // }
+
+  // void _updateStatus(String taskId, DownloadTaskStatus status) {
+  //   state = [
+  //     for (final downloadTask in state)
+  //       if (downloadTask.downloadTaskId == taskId)
+  //         downloadTask.copyWith(downloadStatus: status)
+  //       else
+  //         downloadTask,
+  //   ];
+  // }
+
+  void cancel(String taskId) async {
+    // await FlutterDownloader.cancel(taskId: taskId); //unnecessary cuz the remove detects the running task & cancels it before deleting
     FlutterDownloader.remove(
       taskId: taskId,
       shouldDeleteContent: true,
@@ -48,16 +61,6 @@ class DownloaderNotifier extends Notifier<List<DownloadTaskModel>> {
     ];
   }
 
-  void _updateStatus(String taskId, DownloadTaskStatus status) {
-    state = [
-      for (final downloadTask in state)
-        if (downloadTask.downloadTaskId == taskId)
-          downloadTask.copyWith(downloadStatus: status)
-        else
-          downloadTask,
-    ];
-  }
-
   void updateTask(String taskId, int progress, DownloadTaskStatus status) {
     state = [
       for (final downloadTask in state)
@@ -68,6 +71,11 @@ class DownloaderNotifier extends Notifier<List<DownloadTaskModel>> {
     ];
 
     if (status == DownloadTaskStatus.complete) {
+      // maybe not necessary
+      // Future.delayed(Duration.zero, () {
+      //   ref.read(fileProvider.notifier).refreshFiles();
+      // });
+
       ref.read(fileProvider.notifier).refreshFiles();
     }
   }

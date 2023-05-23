@@ -42,8 +42,6 @@ class _DownloadBottomSheetState extends ConsumerState<DownloadBottomSheet> {
                   top: Radius.circular(30),
                 ),
               ),
-
-              // color: Colors.white,
               padding:
                   const EdgeInsets.only(top: 52, left: 8, right: 8, bottom: 16),
               child: Column(
@@ -194,6 +192,7 @@ class _DownloadBottomSheetState extends ConsumerState<DownloadBottomSheet> {
                 child: const Icon(
                   Icons.close,
                   size: 16,
+                  color: AppColors.black,
                 ),
               ),
             ),

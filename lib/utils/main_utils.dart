@@ -11,7 +11,7 @@ class MainUtils {
     if (await MainUtils.checkStoragePermission() == false) {
       return [];
     }
-    const String appName = 'YouDown';
+    const String appName = '/YouDown';
 
     String? externalStorageDirPath;
     String? musicDirPath;
@@ -44,9 +44,9 @@ class MainUtils {
     }
 
     return [
-      "$externalStorageDirPath/$appName",
-      "$musicDirPath/$appName",
-      "$videoDirPath/$appName"
+      "$externalStorageDirPath$appName",
+      "$musicDirPath$appName",
+      "$videoDirPath$appName"
     ];
   }
 
@@ -88,6 +88,17 @@ class MainUtils {
     throw StateError('unknown platform');
   }
 
+  static requestPermission() async {
+    if (await Permission.storage.isPermanentlyDenied ||
+        await Permission.storage.isRestricted) {
+      return 'Storage permission permanently deniend, please go to app settings & allow it manually';
+    } else if (await Permission.storage.isDenied) {
+      Permission.storage.request();
+    } else {
+      return;
+    }
+  }
+
   static Future<bool> isSdkAbove29() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
@@ -96,24 +107,12 @@ class MainUtils {
     return androidInfo.version.sdkInt > 29;
   }
 
-  static String getFileExtension(File file) {
-    final String fileName = file.path.split('/').last;
+  // static String getFileExtension(File file) {
+  //   final String fileName = file.path.split('/').last;
 
-    final String extension = fileName.split('.').last;
+  //   final String extension = fileName.split('.').last;
 
-    return extension;
-  }
-
-  // static IconData getFileIcon(File file) {
-  //   final String extension = file.path.split('.').last;
-
-  //   if (extension == 'mp3') {
-  //     return Icons.audio_file;
-  //   } else if (extension == 'mp4') {
-  //     return Icons.video_file;
-  //   } else {
-  //     return Icons.file_copy;
-  //   }
+  //   return extension;
   // }
 
   static bool isVideo(File file) {
