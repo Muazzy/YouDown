@@ -25,10 +25,12 @@ class FileNotifier extends AsyncNotifier<List<File>> {
       if (await MainUtils.isSdkAbove29()) {
         final appDir = Directory("${externalStorageDir!.path}$appName");
 
-        final files =
-            await appDir.list().where((file) => file is File).toList();
+        if (await appDir.exists()) {
+          final files =
+              await appDir.list().where((file) => file is File).toList();
 
-        return files.cast<File>();
+          return files.cast<File>();
+        }
       } else {
         final musicDirPath = await AndroidPathProvider.musicPath;
         final videoDirPath = await AndroidPathProvider.moviesPath;
@@ -36,16 +38,19 @@ class FileNotifier extends AsyncNotifier<List<File>> {
         final appMusicDir = Directory(musicDirPath + appName);
         final appVideoDir = Directory(videoDirPath + appName);
 
-        final musicfiles =
-            await appMusicDir.list().where((file) => file is File).toList();
+        if (await appMusicDir.exists() && await appVideoDir.exists()) {
+          final musicfiles =
+              await appMusicDir.list().where((file) => file is File).toList();
 
-        final videofiles =
-            await appVideoDir.list().where((file) => file is File).toList();
+          final videofiles =
+              await appVideoDir.list().where((file) => file is File).toList();
 
-        final allFiles = musicfiles + videofiles;
+          final allFiles = musicfiles + videofiles;
 
-        return allFiles.cast<File>();
+          return allFiles.cast<File>();
+        }
       }
+      return [];
     }
     return [];
   }
