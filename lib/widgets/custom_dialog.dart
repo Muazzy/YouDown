@@ -3,16 +3,28 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:you_down/utils/app_colors.dart';
 
-Widget customDialog(BuildContext context, String title, String description) {
+Widget confirmationDialog({
+  required BuildContext context,
+  required String title,
+  required String description,
+  required String cancelText,
+  required String actionText,
+}) {
   return Dialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
     elevation: 0.0,
     backgroundColor: Colors.transparent,
-    child: dialogContent(context, title, description),
+    child: dialogContent(context, title, description, cancelText, actionText),
   );
 }
 
-Widget dialogContent(BuildContext context, String title, String description) {
+Widget dialogContent(
+  BuildContext context,
+  String title,
+  String description,
+  String cancelText,
+  String actionText,
+) {
   return Container(
     margin: const EdgeInsets.only(left: 0.0, right: 0.0),
     child: BackdropFilter(
@@ -73,28 +85,68 @@ Widget dialogContent(BuildContext context, String title, String description) {
                     ),
                   ),
                 ),
-                InkWell(
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                    decoration: const BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(16.0),
-                          bottomRight: Radius.circular(16.0)),
-                    ),
-                    child: const Text(
-                      "OK",
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                Row(
+                  // mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          decoration: const BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(16.0),
+                              // bottomRight: Radius.circular(16.0),
+                            ),
+                          ),
+                          child: Text(
+                            cancelText,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context, false);
+                        },
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context, false);
-                  },
+                    const VerticalDivider(
+                      // thickness: 1,
+                      width: 1,
+                      // color: AppColors.black,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          decoration: const BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.only(
+                              // bottomLeft: Radius.circular(16.0),
+                              bottomRight: Radius.circular(16.0),
+                            ),
+                          ),
+                          child: Text(
+                            actionText,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(
+                              context, true); //action should be performed
+                        },
+                      ),
+                    ),
+                  ],
                 )
               ],
             ),
@@ -116,6 +168,7 @@ Widget dialogContent(BuildContext context, String title, String description) {
               child: const Icon(
                 Icons.close,
                 size: 12,
+                color: AppColors.black,
               ),
             ),
           ),
