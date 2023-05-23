@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:you_down/provider/downloader_provider.dart';
 import 'package:you_down/provider/downloads_in_progress_provider.dart';
 import 'package:you_down/utils/app_colors.dart';
+import 'package:you_down/widgets/custom_dialog.dart';
 import 'package:you_down/widgets/custom_download_tile.dart';
 import 'package:you_down/widgets/no_downloads_widget.dart';
 
@@ -71,10 +72,25 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                                 final task = downloadingTasks[index];
                                 return CustomDownloadTile(
                                   task: task,
-                                  onCancel: () {
-                                    ref
-                                        .read(downloadProvider.notifier)
-                                        .cancel(task.downloadTaskId ?? '');
+                                  onCancel: () async {
+                                    bool? shouldCancel = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) {
+                                          return confirmationDialog(
+                                            context: context,
+                                            title: 'Cancel?',
+                                            description:
+                                                'Are you sure, you want to cancel the download? ',
+                                            cancelText: 'No',
+                                            actionText: 'Cancel',
+                                          );
+                                        });
+
+                                    if (shouldCancel != null && shouldCancel) {
+                                      ref
+                                          .read(downloadProvider.notifier)
+                                          .cancel(task.downloadTaskId ?? '');
+                                    }
                                   },
                                 );
                               },

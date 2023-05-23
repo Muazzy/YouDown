@@ -13,6 +13,7 @@ import 'package:you_down/utils/app_colors.dart';
 import 'package:you_down/utils/dialog_utils.dart';
 import 'package:you_down/utils/main_utils.dart';
 import 'package:you_down/widgets/custom_badge.dart';
+import 'package:you_down/widgets/custom_dialog.dart';
 import 'package:you_down/widgets/custom_textfield.dart';
 import 'package:you_down/widgets/file_thumbnail.dart';
 import 'package:you_down/widgets/no_downloads_widget.dart';
@@ -28,12 +29,12 @@ class _HomeState extends ConsumerState<Home> {
   late dynamic
       referenceToProvider; //cuz i can't figure out the type of that shit bruh
 
-  final urlCont = TextEditingController();
+  late TextEditingController urlCont;
 
   @override
   void initState() {
     super.initState();
-
+    urlCont = TextEditingController();
     //calling this shit here too so the tasks get updated even when the user is not on downloading tasks screen
     ref
         .read(downloadProvider.notifier)
@@ -43,6 +44,7 @@ class _HomeState extends ConsumerState<Home> {
   @override
   void dispose() {
     super.dispose();
+    urlCont.dispose();
     referenceToProvider.dispose();
   }
 
@@ -118,133 +120,155 @@ class _HomeState extends ConsumerState<Home> {
           DownloadsIcon(ref: ref),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 10,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: CustomFormField(
-                    prefixIcon: Transform.rotate(
-                      angle: 90,
-                      child: const Icon(
-                        Icons.link,
-                        color: AppColors.black,
-                        size: 28,
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          await fileToggler.refreshFiles();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomFormField(
+                      prefixIcon: Transform.rotate(
+                        angle: 90,
+                        child: const Icon(
+                          Icons.link,
+                          color: AppColors.black,
+                          size: 28,
+                        ),
                       ),
+                      labelText: 'Paste link here..',
+                      primaryColor: AppColors.primary,
+                      textColor: AppColors.black,
+                      textEditingController: urlCont,
                     ),
-                    labelText: 'Paste link here..',
-                    primaryColor: AppColors.primary,
-                    textColor: AppColors.black,
-                    textEditingController: urlCont,
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () async {
-                    FocusScope.of(context).unfocus();
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      FocusScope.of(context).unfocus();
 
-                    if (await MainUtils.checkStoragePermission()) {
-                      ref.read(videoProvider.notifier).getVideo(
-                            urlCont.text.trim(),
-                          );
-                    } else {
-                      if (context.mounted) {
-                        DialogUtils(context).showSnackbar(
-                          'permission not allowed',
-                          // context,
-                          SnackBarAction(
-                            label: 'Allow here',
-                            onPressed: () async {
-                              // print('hello im clicked');
-                              final String? error =
-                                  await MainUtils.requestPermission();
+                      if (await MainUtils.checkStoragePermission()) {
+                        ref.read(videoProvider.notifier).getVideo(
+                              urlCont.text.trim(),
+                            );
+                      } else {
+                        if (context.mounted) {
+                          DialogUtils(context).showSnackbar(
+                            'permission not allowed',
+                            // context,
+                            SnackBarAction(
+                              label: 'Allow here',
+                              onPressed: () async {
+                                // print('hello im clicked');
+                                final String? error =
+                                    await MainUtils.requestPermission();
 
-                              if (error?.isNotEmpty ?? false) {
-                                if (context.mounted) {
-                                  DialogUtils(context).showSnackbar(
-                                    error.toString(),
-                                  );
+                                if (error?.isNotEmpty ?? false) {
+                                  if (context.mounted) {
+                                    DialogUtils(context).showSnackbar(
+                                      error.toString(),
+                                    );
+                                  }
                                 }
-                              }
-                            },
-                          ),
-                        );
+                              },
+                            ),
+                          );
+                        }
                       }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(16),
-                      backgroundColor: AppColors.primary, // <-- Button color
-                      foregroundColor: Colors.amber.shade400 // <-- Splash color
-                      ),
-                  child: const Icon(
-                    Icons.download_outlined,
-                    color: Colors.white,
+                    },
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(16),
+                        backgroundColor: AppColors.primary, // <-- Button color
+                        foregroundColor:
+                            Colors.amber.shade400 // <-- Splash color
+                        ),
+                    child: const Icon(
+                      Icons.download_outlined,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Visibility(
-              visible: files.value?.isNotEmpty ?? false,
-              child: const Text(
-                'Downloads',
-                style: TextStyle(
-                  color: AppColors.black,
-                  fontSize: 24,
+                ],
+              ),
+              const SizedBox(height: 16),
+              Visibility(
+                visible: files.value?.isNotEmpty ?? false,
+                child: const Text(
+                  'Downloads',
+                  style: TextStyle(
+                    color: AppColors.black,
+                    fontSize: 24,
+                  ),
                 ),
               ),
-            ),
-            files.when(data: (data) {
-              if (data.isEmpty) {
-                return const Expanded(child: NoDownloadsWidget());
-              }
-              return Expanded(
-                child: ListView.separated(
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    return FileThumbnail(
-                      data[index],
-                      onTap: () {
-                        fileToggler.openFile(data[index]);
-                      },
-                      onShare: () {
-                        fileToggler.shareFile(
-                          data[index],
-                          sharePositionRect,
-                        );
-                      },
-                      onDelete: () {
-                        fileToggler.deleteFile(data[index]);
-                      },
-                    );
-                  },
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 20),
-                ),
-              );
-            }, error: (e, s) {
-              return Expanded(
-                  child: Center(
-                child: Text(e.toString()),
-              ));
-            }, loading: () {
-              return Expanded(
-                child: Center(
-                  child: SpinKitThreeBounce(
-                    color: AppColors.primary.withOpacity(0.5),
+              files.when(data: (data) {
+                if (data.isEmpty) {
+                  return const Expanded(child: NoDownloadsWidget());
+                }
+                return Expanded(
+                  child: ListView.separated(
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      return FileThumbnail(
+                        data[index],
+                        onTap: () {
+                          fileToggler.openFile(data[index]);
+                        },
+                        onShare: () {
+                          fileToggler.shareFile(
+                            data[index],
+                            sharePositionRect,
+                          );
+                        },
+                        onDelete: () async {
+                          bool? shouldDelete = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return confirmationDialog(
+                                  context: context,
+                                  title: 'Delete',
+                                  description:
+                                      'Are you sure, you want to delete it? ',
+                                  cancelText: 'Cancel',
+                                  actionText: 'Delete',
+                                );
+                              });
+
+                          if (shouldDelete != null && shouldDelete) {
+                            fileToggler.deleteFile(data[index]);
+                          }
+                        },
+                      );
+                    },
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 20),
                   ),
-                ),
-              );
-            }),
-          ],
+                );
+              }, error: (e, s) {
+                return Expanded(
+                    child: Center(
+                  child: Text(e.toString()),
+                ));
+              }, loading: () {
+                return Expanded(
+                  child: Center(
+                    child: SpinKitThreeBounce(
+                      color: AppColors.primary.withOpacity(0.5),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
