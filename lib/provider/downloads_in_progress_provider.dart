@@ -12,8 +12,13 @@ class NotDownloadedTaksNotifier extends Notifier<List<DownloadTaskModel>> {
       return [];
     }
 
+    //remove failed tasks as well from the list.
     return downloadTasks
-        .where((task) => task.downloadStatus != DownloadTaskStatus.complete)
+        .where(
+          (task) =>
+              task.downloadStatus != DownloadTaskStatus.complete &&
+              task.downloadStatus != DownloadTaskStatus.failed,
+        )
         .toList();
   }
 }
