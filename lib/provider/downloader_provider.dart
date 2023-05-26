@@ -62,6 +62,13 @@ class DownloaderNotifier extends Notifier<List<DownloadTaskModel>> {
   }
 
   void updateTask(String taskId, int progress, DownloadTaskStatus status) {
+    if (status == DownloadTaskStatus.failed) {
+      _deleteTask(taskId);
+    }
+    if (status == DownloadTaskStatus.complete) {
+      ref.read(fileProvider.notifier).refreshFiles();
+    }
+
     state = [
       for (final downloadTask in state)
         if (downloadTask.downloadTaskId == taskId)
@@ -69,15 +76,6 @@ class DownloaderNotifier extends Notifier<List<DownloadTaskModel>> {
         else
           downloadTask,
     ];
-
-    if (status == DownloadTaskStatus.complete) {
-      // maybe not necessary
-      // Future.delayed(Duration.zero, () {
-      //   ref.read(fileProvider.notifier).refreshFiles();
-      // });
-
-      ref.read(fileProvider.notifier).refreshFiles();
-    }
   }
 
   //init & dispose methods to update the state of downloadTasks
@@ -108,11 +106,6 @@ class DownloaderNotifier extends Notifier<List<DownloadTaskModel>> {
         final taskId = (data as List<dynamic>)[0] as String;
         final status = DownloadTaskStatus(data[1] as int);
         final progress = data[2] as int;
-
-        // print(
-        //   'Callback on UI isolate: '
-        //   'task ($taskId) is in status ($status) and process ($progress)',
-        // );
 
         if (state.isNotEmpty) {
           updateTask(taskId, progress, status);

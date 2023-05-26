@@ -16,8 +16,6 @@ class DownloadsScreen extends ConsumerStatefulWidget {
 }
 
 class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
-  late dynamic referenceToProvider;
-
   @override
   void initState() {
     super.initState();
@@ -26,16 +24,14 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
 
   @override
   void dispose() {
-    // _myDispose();
-    referenceToProvider.dispose();
+    // here is the culprit which was killing the recieve port
+    // and that's why when we switch bw this screen and
+    // the home screen it was actually causing the port to kill so that's why weird shit was happening
+    // & in simple terms the downloading tasks were not updating.
+
+    // referenceToProvider.dispose(); //Dispose method related to flutter donwloader should not be called here.
 
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    referenceToProvider = ref.read(downloadProvider.notifier);
-    super.didChangeDependencies();
   }
 
   @override
